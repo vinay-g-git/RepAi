@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RepAI — The Future of Personal Training</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#ecfdf5', 400: '#34d399', 500: '#10b981', 600: '#059669' },
+            accent: '#06b6d4', darkBg: '#090d16', cardBg: '#111827'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.25s ease, color 0.25s ease; }
+
+    /* HARDENED CURSOR & DROPDOWN VISIBILITY FIX */
+    select, input, option, button { cursor: pointer; }
+    input[type="number"], input[type="text"] { cursor: text; }
+
+    .dark body { background-color: #090d16; color: #f8fafc; }
+    .dark .ui-card { background-color: #111827; border-color: #1f2937; color: #f8fafc; }
+    .dark .ui-subcard { background-color: #0f172a; border-color: #1e293b; color: #f8fafc; }
+    .dark select, .dark input {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+    }
+    .dark select:hover, .dark input:hover, .dark select:focus, .dark input:focus {
+      border-color: #10b981 !important;
+      color: #ffffff !important;
+      background-color: #1e293b !important;
+    }
+    .dark select option {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+    }
+
+    html:not(.dark) body { background-color: #f8fafc; color: #0f172a; }
+    html:not(.dark) .ui-card { background-color: #ffffff; border-color: #e2e8f0; color: #0f172a; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    html:not(.dark) .ui-subcard { background-color: #f1f5f9; border-color: #cbd5e1; color: #0f172a; }
+    html:not(.dark) select, html:not(.dark) input {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    html:not(.dark) select:hover, html:not(.dark) input:hover, html:not(.dark) select:focus, html:not(.dark) input:focus {
+      border-color: #059669 !important;
+      color: #0f172a !important;
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) select option {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) .text-slate-400 { color: #64748b !important; }
+    html:not(.dark) .bg-slate-900/50 { background-color: #f1f5f9 !important; }
+    html:not(.dark) .bg-slate-950 { background-color: #e2e8f0 !important; }
+
+    .neon-glow { text-shadow: 0 0 25px rgba(16, 185, 129, 0.45); }
+    .neon-box-glow { box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.25); }
+
+    /* Audio wave animation */
+    @keyframes wave-pulse {
+      0%, 100% { height: 6px; }
+      50% { height: 18px; }
+    }
+    .audio-bar-1 { animation: wave-pulse 0.7s infinite ease-in-out; }
+    .audio-bar-2 { animation: wave-pulse 0.5s infinite ease-in-out 0.15s; }
+    .audio-bar-3 { animation: wave-pulse 0.8s infinite ease-in-out 0.3s; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ======================================================== -->
+  <!-- PAGE 1: STRICT LANDING PAGE                              -->
+  <!-- STRICT REQUIREMENT: Only title, quote, and Explore Now   -->
+  <!-- ======================================================== -->
+  <section id="page-landing" class="flex flex-col items-center justify-center min-h-screen px-6 text-center relative overflow-hidden">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-accent/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-3xl z-10 space-y-8 animate-fade-in">
+      <div class="space-y-4">
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white dark:text-white html:not(.dark):text-slate-900 neon-glow">
+          RepAI <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-accent">— The Future of Personal Training</span>
+        </h1>
+        <p class="text-xl sm:text-2xl md:text-3xl font-light text-slate-300 html:not(.dark):text-slate-700 italic tracking-wide">
+          "AI that trains with you."
+        </p>
+      </div>
+
+      <div class="pt-6">
+        <button id="btn-explore" onclick="goToDashboard()" class="group relative inline-flex items-center gap-3 px-10 py-5 text-lg font-bold text-black transition-all duration-300 bg-gradient-to-r from-brand-400 via-brand-500 to-accent rounded-full hover:scale-105 active:scale-95 shadow-lg shadow-brand-500/25">
+          <span>Explore Now</span>
+          <i data-lucide="arrow-right" class="w-6 h-6 transition-transform group-hover:translate-x-1"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 2: EXPLORATION APP (WITH DEDICATED FEATURE PAGES)   -->
+  <!-- ======================================================== -->
+  <section id="page-dashboard" class="hidden min-h-screen flex flex-col">
+    <!-- Header with Feature Navigation Tabs & Sun/Moon Toggle -->
+    <header class="border-b border-slate-800 html:not(.dark):border-slate-200 bg-slate-900/60 html:not(.dark):bg-white/80 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchFeatureView('hub')">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-400 to-accent flex items-center justify-center font-black text-black">R</div>
+          <div>
+            <span class="font-extrabold text-lg text-white html:not(.dark):text-slate-900">RepAI</span>
+            <span class="hidden sm:inline text-xs text-slate-400 ml-2">"AI that trains with you."</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs: Dedicated pages for each feature -->
+        <nav class="hidden md:flex items-center gap-1 text-xs font-semibold">
+          <button id="nav-hub" onclick="switchFeatureView('hub')" class="px-3 py-1.5 rounded-lg bg-brand-500 text-black">All Features</button>
+          <button id="nav-trainer" onclick="switchFeatureView('trainer')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">AI Trainer</button>
+          <button id="nav-diet" onclick="switchFeatureView('diet')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Diet & Scanner</button>
+          <button id="nav-habits" onclick="switchFeatureView('habits')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Habit Tracker</button>
+          <button id="nav-buddy" onclick="switchFeatureView('buddy')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Gym Buddy</button>
+          <button id="nav-perf" onclick="switchFeatureView('perf')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Performance</button>
+          <button id="nav-gyms" onclick="switchFeatureView('gyms')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Gym Finder</button>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <!-- Sun/Moon Theme Toggle -->
+          <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-800 html:not(.dark):bg-slate-200 border border-slate-700 html:not(.dark):border-slate-300 text-amber-400 html:not(.dark):text-slate-800 hover:scale-105 transition" title="Toggle Light/Dark Theme">
+            <i id="theme-icon-sun" data-lucide="sun" class="w-4 h-4 hidden"></i>
+            <i id="theme-icon-moon" data-lucide="moon" class="w-4 h-4 block"></i>
+          </button>
+
+          <div id="backend-status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800 html:not(.dark):bg-slate-100 border border-slate-700 html:not(.dark):border-slate-200 text-slate-300 html:not(.dark):text-slate-700">
+            <span id="backend-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="backend-status-text">API (:8000)</span>
+          </div>
+          <button onclick="goToLanding()" class="text-xs text-slate-400 hover:text-brand-500 transition">Exit</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sub-page Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+
+      <!-- ==================================================== -->
+      <!-- VIEW 0: ALL FEATURES HUB (ORIGINAL CARD OVERVIEW)    -->
+      <!-- ==================================================== -->
+      <div id="view-hub" class="space-y-6">
+        <div class="border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <h2 class="text-3xl font-extrabold text-white html:not(.dark):text-slate-900">Explore Core AI Modules</h2>
+          <p class="text-sm text-slate-400 mt-1">Select any module below to open its dedicated workspace.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Card 1 -->
+          <div onclick="switchFeatureView('trainer')" class="ui-card rounded-2xl border p-6 hover:border-brand-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="camera" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">1. AI Gym Trainer & Live Voice Coach</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Pose detection, rep counting, and real-time audio voice cues via live webcam or upload video backup.</p>
+            <span class="text-xs font-bold text-brand-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Trainer <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <!-- Card 2 -->
+          <div onclick="switchFeatureView('diet')" class="ui-card rounded-2xl border p-6 hover:border-emerald-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="salad" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">2. AI Dietician & Meal Photo Scanner</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Metabolic macro calculator + photo meal recognition with automatic Lunch and Dinner protein rebalancing.</p>
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Dietician <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <!-- Card 3 -->
+          <div onclick="switchFeatureView('habits')" class="ui-card rounded-2xl border p-6 hover:border-amber-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="calendar-check" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">3. AI Fitness Habit Tracker</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Behavioral AI model that predicts skip likelihood based on sleep and fatigue to protect your streak.</p>
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Habit Tracker <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <!-- Card 4 -->
+          <div onclick="switchFeatureView('buddy')" class="ui-card rounded-2xl border p-6 hover:border-purple-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="message-square" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">4. Virtual Gym Buddy</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Conversational workout companion with custom coaching personas and sentiment-based guidance.</p>
+            <span class="text-xs font-bold text-purple-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Gym Buddy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <!-- Card 5 -->
+          <div onclick="switchFeatureView('perf')" class="ui-card rounded-2xl border p-6 hover:border-blue-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">5. Pose-to-Performance Analyzer</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Weekly biomechanics tracking with range-of-motion efficiency and joint stability indexes.</p>
+            <span class="text-xs font-bold text-blue-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Performance <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+
+          <!-- Card 6 -->
+          <div onclick="switchFeatureView('gyms')" class="ui-card rounded-2xl border p-6 hover:border-pink-500/60 transition cursor-pointer group">
+            <div class="w-12 h-12 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <i data-lucide="map-pin" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white html:not(.dark):text-slate-900 mb-1">6. Gym Recommender & Planner</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Finds nearby fitness hubs equipped with calibrated equipment, AI bays, sauna, and cold plunge.</p>
+            <span class="text-xs font-bold text-pink-400 flex items-center gap-1 group-hover:translate-x-1 transition">Open Gym Finder <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 1: DEDICATED PAGE - AI GYM TRAINER              -->
+      <!-- ==================================================== -->
+      <div id="view-trainer" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-brand-400 uppercase tracking-wider">Module 1 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">AI Gym Trainer & Live Voice Coach</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="ui-card rounded-2xl border p-6 neon-box-glow">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 html:not(.dark):border-slate-200 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+              <label class="text-xs text-slate-400 font-semibold">Exercise:</label>
+              <select id="exercise-select" onchange="onExerciseChange()" class="border text-xs rounded-lg px-3 py-1.5 outline-none">
+                <option value="squat">Squats (Hips & Knees)</option>
+                <option value="pushup">Push-ups (Chest & Elbows)</option>
+                <option value="bicep_curl">Bicep Curls (Arms)</option>
+                <option value="lunges">Forward Lunges (Quads/Glutes)</option>
+                <option value="shoulder_press">Overhead Shoulder Press</option>
+              </select>
+            </div>
+
+            <div class="inline-flex rounded-lg bg-slate-800 html:not(.dark):bg-slate-200 p-1 border border-slate-700 html:not(.dark):border-slate-300">
+              <button id="mode-webcam-btn" onclick="switchInputMode('webcam')" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-brand-500 text-black">Webcam</button>
+              <button id="mode-upload-btn" onclick="switchInputMode('upload')" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 html:not(.dark):text-slate-700">Upload Video Backup</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 relative bg-black rounded-xl overflow-hidden min-h-[420px] flex items-center justify-center border border-slate-800">
+              <video id="webcam-elem" class="hidden" playsinline></video>
+              <video id="uploaded-video-elem" class="hidden" playsinline loop muted></video>
+              <canvas id="pose-canvas" class="w-full h-full object-contain max-h-[500px]"></canvas>
+
+              <div id="canvas-overlay-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 p-6 text-center space-y-4">
+                <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-brand-400">
+                  <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                </div>
+                <div>
+                  <h3 id="placeholder-title" class="font-bold text-white text-lg">Webcam Ready</h3>
+                  <p id="placeholder-desc" class="text-xs text-slate-400 max-w-sm">Click start to activate camera. The AI voice coach will verbally guide your reps and form.</p>
+                </div>
+
+                <div id="upload-file-wrapper" class="hidden pt-2">
+                  <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-medium text-white transition">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 text-brand-400"></i>
+                    <span>Select Workout Video (.mp4, .webm)</span>
+                    <input type="file" id="video-file-input" accept="video/*" class="hidden" onchange="handleVideoUpload(event)" />
+                  </label>
+                  <div id="uploaded-file-name" class="text-xs text-slate-400 mt-1"></div>
+                </div>
+
+                <button id="btn-start-tracking" onclick="startTracking()" class="px-8 py-3 bg-brand-500 hover:bg-brand-400 text-black font-bold rounded-lg text-sm transition">
+                  Start Live Tracking & Voice Coach
+                </button>
+              </div>
+
+              <div id="live-feedback-banner" class="hidden absolute top-4 left-4 right-4 bg-slate-900/90 border border-brand-500/40 backdrop-blur-md rounded-lg px-4 py-2 flex items-center justify-between text-sm">
+                <span id="feedback-text" class="text-emerald-400 font-semibold flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4"></i> Ready
+                </span>
+                <div class="flex items-center gap-3">
+                  <div id="voice-hud-indicator" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 border border-brand-500/30 text-brand-400 text-xs">
+                    <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+                    <span id="voice-hud-label" class="text-[10px] font-mono">Listening...</span>
+                    <div id="voice-audio-wave" class="flex items-center gap-0.5 ml-1 hidden">
+                      <span class="w-1 bg-brand-400 rounded-full audio-bar-1"></span>
+                      <span class="w-1 bg-brand-400 rounded-full audio-bar-2"></span>
+                      <span class="w-1 bg-brand-400 rounded-full audio-bar-3"></span>
+                    </div>
+                  </div>
+                  <span id="joint-angle-badge" class="font-mono text-xs text-slate-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Angle: --°</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Side Metrics -->
+            <div class="flex flex-col justify-between space-y-4 bg-slate-900/50 p-5 rounded-xl border border-slate-800 html:not(.dark):border-slate-200">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-bold text-white html:not(.dark):text-slate-900 text-sm flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4 text-brand-400"></i> Rep Telemetry
+                  </h3>
+                  <button id="toggle-voice-btn" onclick="toggleVoiceCoach()" class="px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                    <i data-lucide="volume-2" class="w-3 h-3"></i>
+                    <span id="voice-btn-label">Voice: ACTIVE</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <div class="bg-slate-800 html:not(.dark):bg-white p-3 rounded-lg border border-slate-700 html:not(.dark):border-slate-200 text-center">
+                    <div class="text-xs text-slate-400">Completed Reps</div>
+                    <div id="rep-counter" class="text-3xl font-extrabold text-brand-400 mt-1">0</div>
+                  </div>
+                  <div class="bg-slate-800 html:not(.dark):bg-white p-3 rounded-lg border border-slate-700 html:not(.dark):border-slate-200 text-center">
+                    <div class="text-xs text-slate-400">Phase</div>
+                    <div id="rep-stage" class="text-lg font-bold text-cyan-400 mt-2">UP</div>
+                  </div>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <div class="flex justify-between text-slate-400 mb-1">
+                      <span>Form Score</span>
+                      <span id="score-val" class="font-bold text-brand-400">95%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 html:not(.dark):bg-slate-200 h-2 rounded-full overflow-hidden">
+                      <div id="score-bar" class="bg-gradient-to-r from-brand-500 to-accent h-full w-[95%]"></div>
+                    </div>
+                  </div>
+
+                  <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 html:not(.dark):border-slate-300 space-y-2">
+                    <div class="flex justify-between items-center text-slate-400">
+                      <span>Speech Tempo:</span>
+                      <select id="voice-rate-select" onchange="setVoiceRate(this.value)" class="border rounded px-1.5 py-0.5 text-[11px]">
+                        <option value="1.0">Normal (1.0x)</option>
+                        <option value="1.15" selected>Energetic (1.15x)</option>
+                        <option value="1.3">Rapid (1.3x)</option>
+                      </select>
+                    </div>
+                    <p id="coaching-advice" class="text-slate-400 leading-relaxed italic text-[11px]">
+                      "RepAI Voice Coach active. Stand in frame to initiate tracking."
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-2 flex gap-2">
+                <button onclick="stopTracking()" class="flex-1 py-2 rounded-lg bg-slate-800 html:not(.dark):bg-slate-200 hover:bg-slate-700 text-slate-300 html:not(.dark):text-slate-800 text-xs font-semibold border border-slate-700 html:not(.dark):border-slate-300">Stop</button>
+                <button onclick="resetReps()" class="flex-1 py-2 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 text-xs font-semibold border border-red-800/40">Reset Reps</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 2: DEDICATED PAGE - AI DIETICIAN & SCANNER      -->
+      <!-- ==================================================== -->
+      <div id="view-diet" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Module 2 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">AI Dietician & Meal Photo Scanner</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Profiler -->
+          <div class="ui-card rounded-2xl border p-6 space-y-4">
+            <h3 class="text-base font-bold text-white html:not(.dark):text-slate-900 flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> Metabolic & Dietary Profiler
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="text-slate-400 block mb-1">Age (years)</label>
+                <input type="number" id="diet-age" value="30" min="13" max="100" class="w-full border rounded p-2 outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Sex (for BMR formula)</label>
+                <select id="diet-sex" class="w-full border rounded p-2 outline-none">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="text-slate-400 block mb-1">Body Weight (kg)</label>
+                <input type="number" id="diet-weight" value="75" min="30" max="300" class="w-full border rounded p-2 outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Height (cm)</label>
+                <input type="number" id="diet-height" value="178" min="100" max="250" class="w-full border rounded p-2 outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="text-slate-400 block mb-1">Fitness Goal</label>
+                <select id="diet-goal" class="w-full border rounded p-2 outline-none">
+                  <option value="lean_bulk">Lean Muscle Hypertrophy (+300 kcal)</option>
+                  <option value="aggressive_bulk">Aggressive Mass Gain (+600 kcal)</option>
+                  <option value="moderate_cut">Moderate Fat Loss (-450 kcal)</option>
+                  <option value="aggressive_cut">Aggressive Fat Cut (-750 kcal)</option>
+                  <option value="recomposition">Body Recomposition (-150 kcal)</option>
+                  <option value="maintenance">Strict Energy Balance (0 kcal)</option>
+                  <option value="endurance">Endurance & Athletic Fueling</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Activity Level</label>
+                <select id="diet-activity" class="w-full border rounded p-2 outline-none">
+                  <option value="moderately_active">Moderately Active (3-5 days/wk)</option>
+                  <option value="sedentary">Sedentary (Desk work, low steps)</option>
+                  <option value="lightly_active">Lightly Active (1-2 days/wk)</option>
+                  <option value="highly_active">Highly Active (6-7 days/wk)</option>
+                  <option value="elite_athlete">Elite Athlete / Two-a-days</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="text-xs">
+              <label class="text-slate-400 block mb-1">Dietary Preference</label>
+              <select id="diet-pref" class="w-full border rounded p-2 outline-none">
+                <option value="high_protein">High-Protein Omnivore</option>
+                <option value="clean_balanced">Whole Foods Balanced</option>
+                <option value="vegetarian">Vegetarian (Lacto-Ovo)</option>
+                <option value="vegan">Strict Vegan (Plant-Based)</option>
+                <option value="pescatarian">Pescatarian</option>
+                <option value="keto">Ketogenic (High Fat, Low Carb)</option>
+                <option value="paleo">Paleo / Ancestral</option>
+                <option value="low_carb">Low-Carb High-Fat (LCHF)</option>
+                <option value="mediterranean">Mediterranean Heart Health</option>
+                <option value="gluten_free">Gluten & Dairy Free</option>
+              </select>
+            </div>
+
+            <button onclick="requestDietPlan()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs rounded-lg transition">
+              Calculate Daily Targets & Macro Splits
+            </button>
+            <div id="diet-result" class="hidden p-3 bg-slate-950 rounded-lg border border-slate-800 html:not(.dark):border-slate-300 text-xs space-y-1"></div>
+          </div>
+
+          <!-- Photo Scanner & Next-Meal Planner -->
+          <div class="ui-card rounded-2xl border p-6 space-y-4 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-base font-bold text-white html:not(.dark):text-slate-900 flex items-center gap-2">
+                  <i data-lucide="scan" class="w-4 h-4 text-cyan-400"></i> AI Meal Photo Scanner
+                </h3>
+                <span class="text-[10px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-2 py-0.5 rounded font-bold">Vision AI</span>
+              </div>
+              <p class="text-xs text-slate-400 mb-3">Upload a photo of your meal. A vision-capable AI model looks at the actual photo and reports only what it can identify — estimates, not lab measurements, and it will tell you when it's unsure or when the photo isn't food.</p>
+
+              <div class="grid grid-cols-2 gap-3 text-xs mb-3">
+                <div>
+                  <label class="text-slate-400 block mb-1">Meal Type</label>
+                  <select id="meal-photo-type" class="w-full border rounded p-2 outline-none">
+                    <option value="Breakfast">Breakfast Photo</option>
+                    <option value="Lunch">Lunch Photo</option>
+                    <option value="Snack">Snack Photo</option>
+                    <option value="Dinner">Dinner Photo</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-slate-400 block mb-1">Daily Target Protein (g)</label>
+                  <input type="number" id="target-protein-input" value="160" class="w-full border rounded p-2 outline-none">
+                </div>
+              </div>
+
+              <label id="meal-photo-dropzone" class="cursor-pointer flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl bg-slate-950 transition text-center">
+                <i data-lucide="image" class="w-6 h-6 text-brand-400 mb-1"></i>
+                <span class="text-xs text-slate-300 html:not(.dark):text-slate-800 font-semibold">Upload Photo of Meal</span>
+                <span class="text-[10px] text-slate-500">JPG, PNG, WebP · max 8MB</span>
+                <input type="file" id="meal-photo-input" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="previewMealPhoto(event)" />
+              </label>
+
+              <div id="meal-photo-preview-wrap" class="hidden mt-3 flex items-center gap-3 p-2 bg-slate-950 rounded-lg border border-slate-800 html:not(.dark):border-slate-300">
+                <img id="meal-photo-preview" src="" class="w-16 h-16 rounded object-cover border border-slate-700" />
+                <div class="text-xs flex-1">
+                  <span id="meal-photo-filename" class="font-bold text-white html:not(.dark):text-slate-900 block">meal.jpg</span>
+                  <span class="text-brand-500 text-[10px] font-semibold">Photo ready to send to the AI.</span>
+                </div>
+                <button type="button" onclick="clearMealPhoto()" class="text-[10px] text-slate-400 hover:text-red-400 font-semibold">Remove</button>
+              </div>
+            </div>
+
+            <div>
+              <button id="meal-photo-analyze-btn" onclick="analyzeMealPhoto()" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-brand-500 text-black font-bold text-xs rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <span id="meal-photo-analyze-label">Analyze Photo</span>
+              </button>
+
+              <div id="meal-photo-error" class="hidden mt-3 p-3 bg-red-950/40 border border-red-800/50 rounded-lg text-xs text-red-300 flex items-start justify-between gap-2">
+                <span id="meal-photo-error-text"></span>
+              </div>
+
+              <div id="meal-photo-result" class="hidden mt-3 p-3 bg-slate-950 rounded-lg border border-slate-800 html:not(.dark):border-slate-300 text-xs space-y-2 max-h-72 overflow-y-auto"></div>
+
+              <button id="meal-photo-rescan-btn" onclick="clearMealPhoto()" class="hidden w-full mt-2 py-2 rounded-lg bg-slate-800 html:not(.dark):bg-slate-200 hover:bg-slate-700 text-slate-300 html:not(.dark):text-slate-800 text-xs font-semibold border border-slate-700 html:not(.dark):border-slate-300">
+                Scan Another Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 3: DEDICATED PAGE - HABIT TRACKER               -->
+      <!-- ==================================================== -->
+      <div id="view-habits" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Module 3 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">AI Fitness Habit Tracker</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="ui-card rounded-2xl border p-6 max-w-xl mx-auto space-y-5">
+          <p class="text-xs text-slate-400">A transparent, rule-based score estimates skip likelihood from your own weekly attendance, sleep, stress, and soreness — not machine learning, and not a medical or psychological assessment.</p>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="text-slate-400 block mb-1">Preferred Training Slot:</label>
+              <select id="habit-slot" class="w-full border rounded p-2 outline-none">
+                <option value="Morning 7:00 AM">Morning (7:00 AM)</option>
+                <option value="Lunch 12:30 PM">Lunch (12:30 PM)</option>
+                <option value="Evening 6:30 PM">Evening (6:30 PM)</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-slate-400 block mb-1">Days Trained (last 7 days):</label>
+                <input type="number" id="habit-days-trained" value="3" min="0" max="7" class="w-full border rounded p-2 outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Avg. Sleep (hrs/night):</label>
+                <input type="number" id="habit-sleep" value="7" min="0" max="24" step="0.1" class="w-full border rounded p-2 outline-none">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-slate-400 block mb-1">Stress (Scale 1 to 10):</label>
+                <input type="number" id="habit-stress" value="5" min="1" max="10" class="w-full border rounded p-2 outline-none">
+              </div>
+              <div>
+                <label class="text-slate-400 block mb-1">Muscle Soreness (Scale 1 to 10):</label>
+                <input type="number" id="habit-soreness" value="6" min="1" max="10" class="w-full border rounded p-2 outline-none">
+              </div>
+            </div>
+          </div>
+
+          <button onclick="requestBehavioralNudge()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-black font-bold text-xs rounded-lg transition">
+            Calculate Skip Probability & Generate Nudge
+          </button>
+          <div id="habit-result" class="hidden p-3 bg-slate-950 rounded-lg text-xs space-y-1"></div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 4: DEDICATED PAGE - VIRTUAL GYM BUDDY           -->
+      <!-- ==================================================== -->
+      <div id="view-buddy" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">Module 4 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">Virtual Gym Buddy</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="ui-card rounded-2xl border p-6 max-w-2xl mx-auto space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-400 font-semibold">Coach Persona:</span>
+            <select id="buddy-persona" class="border text-xs rounded px-2.5 py-1 outline-none">
+              <option value="friendly_bro">Friendly Gym Bro</option>
+              <option value="drill_sergeant">Drill Sergeant</option>
+              <option value="biomechanist">Biomechanist</option>
+              <option value="empathetic">Recovery Coach</option>
+            </select>
+          </div>
+
+          <div id="chat-box" class="h-64 overflow-y-auto bg-slate-950 html:not(.dark):bg-slate-100 rounded-xl p-4 text-xs space-y-2 border border-slate-800 html:not(.dark):border-slate-200">
+            <div class="text-slate-300 html:not(.dark):text-slate-800">
+              <span class="text-brand-500 font-bold block mb-0.5">RepAI:</span>
+              Ready to train! How does your body feel today?
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="buddy-input" placeholder="e.g. Lower back is sore from squats..." onkeypress="if(event.key==='Enter'){event.preventDefault(); sendBuddyMessage();}" class="flex-1 border text-xs rounded-lg px-3 py-2 outline-none">
+            <button id="buddy-send-btn" onclick="sendBuddyMessage()" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-lg transition">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 5: DEDICATED PAGE - POSE-TO-PERFORMANCE         -->
+      <!-- ==================================================== -->
+      <div id="view-perf" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider">Module 5 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">Pose-to-Performance Analyzer</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="ui-card rounded-2xl border p-6 max-w-xl mx-auto space-y-4">
+          <p class="text-xs text-slate-400">Builds a report from your last AI Trainer session's actual measured data — completed reps, form warnings, and (once enough reps are captured) range-of-motion, joint-angle, and tempo consistency. Anything not actually measured is shown as "Not enough data" rather than guessed.</p>
+
+          <div class="text-xs">
+            <label class="text-slate-400 block mb-1">Perceived Effort Scale (RPE) — optional, for your own reference:</label>
+            <select id="perf-rpe" class="w-full border rounded p-2 outline-none">
+              <option value="">Not reported</option>
+              <option value="7">RPE 7 (3 reps in reserve)</option>
+              <option value="8">RPE 8 (2 reps in reserve)</option>
+              <option value="9">RPE 9 (1 rep in reserve)</option>
+              <option value="10">RPE 10 (Failure / PR)</option>
+            </select>
+          </div>
+
+          <button onclick="fetchPerformanceReport()" class="w-full py-2.5 bg-slate-800 html:not(.dark):bg-slate-200 hover:bg-slate-700 text-blue-400 html:not(.dark):text-blue-700 font-bold text-xs rounded-lg border border-blue-900 html:not(.dark):border-blue-300 transition">
+            Generate Report From This Session
+          </button>
+          <div id="perf-result" class="hidden p-3 bg-slate-950 rounded-lg text-xs space-y-1"></div>
+        </div>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- VIEW 6: DEDICATED PAGE - GYM RECOMMENDER             -->
+      <!-- ==================================================== -->
+      <div id="view-gyms" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 html:not(.dark):border-slate-200 pb-4">
+          <div>
+            <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">Module 6 Workspace</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white html:not(.dark):text-slate-900">Gym Recommender & Planner</h2>
+          </div>
+          <button onclick="switchFeatureView('hub')" class="text-xs text-slate-400 hover:text-white">&larr; Back to Hub</button>
+        </div>
+
+        <div class="ui-card rounded-2xl border p-6 max-w-xl mx-auto space-y-4">
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="text-slate-400 block mb-1">City or Postal Code:</label>
+              <input type="text" id="gym-city" value="Austin, TX" class="w-full border rounded p-2 outline-none">
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Specialized Amenity:</label>
+              <select id="gym-amenity" class="w-full border rounded p-2 outline-none">
+                <option value="Olympic Platforms">Olympic Lifting Platforms</option>
+                <option value="AI Smart Racks">AI Smart Racks & CV Bays</option>
+                <option value="Cold Plunge & Sauna">Sauna & Cold Plunge</option>
+                <option value="24/7 Powerlifting">24/7 Calibrated Plates</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Max Monthly Budget (₹/month, optional):</label>
+              <input type="number" id="gym-budget" min="0" step="5" placeholder="e.g. 100" class="w-full border rounded p-2 outline-none">
+            </div>
+          </div>
+
+          <button onclick="requestGymRecommendations()" class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs rounded-lg transition">
+            Locate Matching Gyms
+          </button>
+          <div id="gym-result" class="hidden p-3 bg-slate-950 rounded-lg text-xs space-y-2"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="border-t border-slate-800 html:not(.dark):border-slate-200 py-6 text-center text-xs text-slate-500">
+      RepAI Unified Fitness Ecosystem • MediaPipe Pose Computer Vision • Live Audio Coach Engine
+    </footer>
+  </section>
+
+  <!-- JAVASCRIPT: ROUTING & MODULE LOGIC -->
+  <script>
+    // Guard every lucide call: if the icon CDN script is blocked/slow/fails,
+    // calling lucide.createIcons() directly would throw a ReferenceError at
+    // the TOP of this script and abort all remaining top-level statements
+    // below it (including BACKEND_BASE / isBackendAlive init), silently
+    // breaking every feature in the app, not just the icons.
+    function safeCreateIcons() {
+      try {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+      } catch (e) {
+        console.warn('Icon rendering skipped:', e);
+      }
+    }
+    safeCreateIcons();
+    const BACKEND_BASE = "http://localhost:8000";
+    let isBackendAlive = false;
+
+    // THEME SWITCH LOGIC
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      const sunIcon = document.getElementById('theme-icon-sun');
+      const moonIcon = document.getElementById('theme-icon-moon');
+
+      if (isDark) {
+        html.classList.remove('dark');
+        localStorage.setItem('repai_theme', 'light');
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('repai_theme', 'dark');
+        moonIcon.classList.remove('hidden');
+        sunIcon.classList.add('hidden');
+      }
+    }
+
+    if (localStorage.getItem('repai_theme') === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.getElementById('theme-icon-sun').classList.remove('hidden');
+      document.getElementById('theme-icon-moon').classList.add('hidden');
+    }
+
+    // MULTI-PAGE NAVIGATION ROUTER
+    function goToDashboard() {
+      document.getElementById('page-landing').classList.add('hidden');
+      document.getElementById('page-dashboard').classList.remove('hidden');
+      window.scrollTo(0, 0);
+      switchFeatureView('hub');
+      checkBackendHealth();
+    }
+
+    function goToLanding() {
+      stopTracking();
+      document.getElementById('page-dashboard').classList.add('hidden');
+      document.getElementById('page-landing').classList.remove('hidden');
+    }
+
+    function switchFeatureView(viewId) {
+      const views = ['hub', 'trainer', 'diet', 'habits', 'buddy', 'perf', 'gyms'];
+      views.forEach(v => {
+        const elem = document.getElementById(`view-${v}`);
+        const nav = document.getElementById(`nav-${v}`);
+        if (elem) elem.classList.add('hidden');
+        if (nav) {
+          nav.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white";
+        }
+      });
+
+      const activeView = document.getElementById(`view-${viewId}`);
+      const activeNav = document.getElementById(`nav-${viewId}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeNav) {
+        activeNav.className = "px-3 py-1.5 rounded-lg bg-brand-500 text-black font-bold";
+      }
+
+      if (viewId !== 'trainer') {
+        stopTracking();
+      }
+      window.scrollTo(0, 0);
+    }
+
+    async function checkBackendHealth() {
+      const dot = document.getElementById('backend-status-dot');
+      const text = document.getElementById('backend-status-text');
+      try {
+        const res = await fetch(`${BACKEND_BASE}/health`, { signal: AbortSignal.timeout(1800) });
+        if (res.ok) {
+          isBackendAlive = true;
+          dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+          text.innerText = "API Connected (:8000)";
+          return;
+        }
+      } catch(e) {
+        isBackendAlive = false;
+        dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        text.innerText = "API Offline (Errors Shown)";
+      }
+    }
+
+    // ----------------------------------------------------
+    // LIVE AUDIO VOICE ASSISTANT ENGINE
+    // ----------------------------------------------------
+    let voiceCoachEnabled = true;
+    let voiceRate = 1.15;
+    let lastSpokenTime = 0;
+    let lastSpokenText = "";
+
+    // Per-category cooldowns so, e.g., a form warning doesn't block a rep-count
+    // announcement, but the SAME kind of message can't fire every frame.
+    const SPEECH_COOLDOWNS = {
+      form: 4000,        // form warnings ("chest up", etc.)
+      repComplete: 800,  // "Rep N!" announcements
+      transition: 1800,  // "good depth", "squeeze at top" mid-rep cues
+      reposition: 5000,  // "move into frame" guidance
+      searching: 6000,   // "searching for athlete"
+      general: 1800
+    };
+    const MIN_SPEECH_GAP_MS = 600; // absolute floor between any two utterances
+    let lastSpokenByCategory = {};
+
+    function setVoiceRate(rate) {
+      voiceRate = parseFloat(rate);
+    }
+
+    function toggleVoiceCoach() {
+      voiceCoachEnabled = !voiceCoachEnabled;
+      const btnLabel = document.getElementById('voice-btn-label');
+      const btn = document.getElementById('toggle-voice-btn');
+      if (voiceCoachEnabled) {
+        btnLabel.innerText = "Voice: ACTIVE";
+        btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+        speakCoachAudio("Voice coach active. Let's work!", true);
+      } else {
+        btnLabel.innerText = "Voice: MUTED";
+        btn.className = "px-2.5 py-1 rounded-full text-xs font-bold border transition flex items-center gap-1.5 bg-slate-800 text-slate-400 border-slate-700";
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        stopAudioWave();
+      }
+    }
+
+    function showAudioWave(text) {
+      const wave = document.getElementById('voice-audio-wave');
+      const label = document.getElementById('voice-hud-label');
+      if (wave) wave.classList.remove('hidden');
+      if (label) label.innerText = text.slice(0, 15) + "..";
+    }
+
+    function stopAudioWave() {
+      const wave = document.getElementById('voice-audio-wave');
+      const label = document.getElementById('voice-hud-label');
+      if (wave) wave.classList.add('hidden');
+      if (label) label.innerText = "Listening...";
+    }
+
+    function speakCoachAudio(text, force = false, category = 'general') {
+      if (!voiceCoachEnabled || !('speechSynthesis' in window)) return;
+      const now = Date.now();
+      const cooldown = SPEECH_COOLDOWNS[category] ?? SPEECH_COOLDOWNS.general;
+      const last = lastSpokenByCategory[category];
+
+      // Never let two utterances overlap faster than the absolute floor,
+      // even forced ones (protects against bursts from multiple triggers firing together).
+      if (last && (now - last.time) < MIN_SPEECH_GAP_MS) return;
+
+      if (!force && last) {
+        // Same message repeated too soon in this category -> skip.
+        if (last.text === text && (now - last.time) < cooldown) return;
+        // Different message, but this category is still "hot" -> skip anyway
+        // so the same warning class doesn't chatter every frame.
+        if ((now - last.time) < cooldown) return;
+      }
+
+      window.speechSynthesis.cancel();
+      lastSpokenByCategory[category] = { time: now, text };
+      // Kept for any legacy checks elsewhere.
+      lastSpokenTime = now;
+      lastSpokenText = text;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = voiceRate;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => showAudioWave(text);
+      utterance.onend = () => stopAudioWave();
+      utterance.onerror = () => stopAudioWave();
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ----------------------------------------------------
+    // MEDIAPIPE POSE TRACKING
+    // ----------------------------------------------------
+    let currentInputMode = 'webcam', isTracking = false, workoutSessionActive = false, lastSavedWorkoutTimestamp = null, cameraInstance = null, poseInstance = null, animFrameId = null;
+    let selectedExercise = 'squat', repCount = 0, repStage = 'UP', formWarnings = 0;
+    // Per-rep measurements captured by the pose tracker itself (used by the
+    // Performance Analyzer). Each entry: { rep_number, extreme_angle, return_angle, duration_ms }.
+    let sessionRepLog = [];
+
+    const videoWebcam = document.getElementById('webcam-elem');
+    const videoUploaded = document.getElementById('uploaded-video-elem');
+    const canvas = document.getElementById('pose-canvas');
+    const ctx = canvas.getContext('2d');
+    let currentUploadedObjectUrl = null;
+
+    // ----------------------------------------------------
+    // TEMPORAL SMOOTHING / DEBOUNCE CONFIG
+    // Landmark noise (a single jittery frame) must never move
+    // the rep state machine or count a rep on its own.
+    // ----------------------------------------------------
+    const VISIBILITY_MIN = 0.5;         // landmark must be at least this visible to trust
+    const SIDE_SWITCH_MISS_FRAMES = 8;  // frames the active side must stay unreliable before we swap sides
+    const CONFIRM_FRAMES = 3;           // consecutive frames a threshold must hold before we commit a stage change
+    const MIN_REP_INTERVAL_MS = 350;    // minimum time between two counted reps (debounce double counts)
+    const FORM_EVENT_CONFIRM_FRAMES = 5;  // consecutive bad-form frames before we raise a warning (edge-triggered)
+    const FORM_CLEAR_CONFIRM_FRAMES = 5;  // consecutive good-form frames before we allow warning to re-arm
+    const MISSING_LANDMARK_CONFIRM_FRAMES = 6; // frames of insufficient visibility before we tell the user to reposition
+
+    const LEG_IDS = { left: [23, 25, 27], right: [24, 26, 28] };       // hip, knee, ankle
+    const ARM_IDS = { left: [11, 13, 15], right: [12, 14, 16] };      // shoulder, elbow, wrist
+    const TORSO_IDS = { left: [11, 23, 25], right: [12, 24, 26] };    // shoulder, hip, knee (for lean check)
+
+    function createExerciseState() {
+      return {
+        activeSide: null,
+        sideMissFrames: 0,
+        counters: {},   // independent debounce counter per condition key
+        lastRepTime: 0,
+        formWarned: false,
+        missingFrames: 0,
+        extremeAngle: null   // joint angle captured at this rep's turnaround point, for the Performance Analyzer
+      };
+    }
+    let exerciseState = createExerciseState();
+
+    // Each supported exercise's natural resting position determines the
+    // correct starting stage. Squats/lunges/push-ups rest at full extension
+    // ("UP"). Curls/presses rest with the arm extended at the bottom of the
+    // movement, which this state machine also calls "DOWN" — using "UP" as
+    // the default for those caused an immediate phantom rep the instant the
+    // user's arm was seen extended (their natural starting pose).
+    function initialStageFor(exercise) {
+      return (exercise === 'bicep_curl' || exercise === 'shoulder_press') ? 'DOWN' : 'UP';
+    }
+
+    function stageLabel(exercise, stage) {
+      if (exercise === 'bicep_curl') return stage === 'DOWN' ? 'EXTENDED' : 'CURLED';
+      if (exercise === 'shoulder_press') return stage === 'DOWN' ? 'BOTTOM' : 'PRESSED';
+      return stage; // UP / DOWN as-is for squat, lunges, pushup
+    }
+
+    function avgVisibility(lm, ids) {
+      let sum = 0;
+      for (const i of ids) sum += (lm[i] ? (lm[i].visibility ?? 0) : 0);
+      return sum / ids.length;
+    }
+
+    // Picks which body side to trust for a bilateral movement, with hysteresis:
+    // once a side is locked in, we don't hop to the other side just because one
+    // noisy frame dipped below threshold — it must stay unreliable for several
+    // consecutive frames AND the other side must be reliable before we switch.
+    // Returns null when neither side can currently be trusted (caller must not guess).
+    function selectActiveSide(lm, idsMap, state) {
+      const leftVis = avgVisibility(lm, idsMap.left);
+      const rightVis = avgVisibility(lm, idsMap.right);
+      const bestSide = leftVis >= rightVis ? 'left' : 'right';
+      const bestVis = Math.max(leftVis, rightVis);
+
+      if (!state.activeSide) {
+        if (bestVis >= VISIBILITY_MIN) { state.activeSide = bestSide; state.sideMissFrames = 0; }
+        return state.activeSide && bestVis >= VISIBILITY_MIN ? state.activeSide : null;
+      }
+
+      const activeVis = state.activeSide === 'left' ? leftVis : rightVis;
+      if (activeVis < VISIBILITY_MIN) {
+        state.sideMissFrames++;
+        if (state.sideMissFrames > SIDE_SWITCH_MISS_FRAMES && bestVis >= VISIBILITY_MIN) {
+          state.activeSide = bestSide;
+          state.sideMissFrames = 0;
+          return state.activeSide;
+        }
+        return null; // temporarily unreliable — don't guess this frame
+      }
+      state.sideMissFrames = 0;
+      return state.activeSide;
+    }
+
+    // Requires `isTrue` to hold for CONFIRM_FRAMES consecutive frames under the
+    // same `key` before returning true. A single noisy frame can never flip this.
+    // Each key (e.g. 'down', 'up', 'formBad') tracks its own independent streak
+    // so multiple conditions can be checked within the same frame safely.
+    function debounceCondition(state, key, isTrue) {
+      const prev = state.counters[key] || 0;
+      state.counters[key] = isTrue ? prev + 1 : 0;
+      return state.counters[key] >= CONFIRM_FRAMES;
+    }
+
+    function onExerciseChange() {
+      selectedExercise = document.getElementById('exercise-select').value;
+      resetReps();
+      speakCoachAudio(`Switched to ${selectedExercise.replace('_', ' ')}. Assume position!`, true, 'transition');
+    }
+
+    function switchInputMode(mode) {
+      stopTracking();
+      currentInputMode = mode;
+      const webcamBtn = document.getElementById('mode-webcam-btn');
+      const uploadBtn = document.getElementById('mode-upload-btn');
+      const uploadWrapper = document.getElementById('upload-file-wrapper');
+      const title = document.getElementById('placeholder-title');
+      const desc = document.getElementById('placeholder-desc');
+
+      if (mode === 'webcam') {
+        webcamBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-brand-500 text-black";
+        uploadBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 html:not(.dark):text-slate-700";
+        uploadWrapper.classList.add('hidden');
+        title.innerText = "Webcam Ready";
+        desc.innerText = "Click start to activate camera. The AI voice coach will verbally guide your reps and form.";
+      } else {
+        uploadBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold bg-brand-500 text-black";
+        webcamBtn.className = "px-3 py-1.5 rounded-md text-xs font-semibold text-slate-300 html:not(.dark):text-slate-700";
+        uploadWrapper.classList.remove('hidden');
+        title.innerText = "Upload Workout Video Backup";
+        desc.innerText = "Select a video of your workout. AI will track poses and provide real-time audio cues.";
+      }
+    }
+
+    function handleVideoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      // Release the previous blob URL so repeated uploads don't leak memory.
+      if (currentUploadedObjectUrl) { URL.revokeObjectURL(currentUploadedObjectUrl); }
+      document.getElementById('uploaded-file-name').innerText = `Selected: ${file.name}`;
+      currentUploadedObjectUrl = URL.createObjectURL(file);
+      videoUploaded.src = currentUploadedObjectUrl;
+      videoUploaded.load();
+      // If a tracking loop was already running against a prior video, make sure
+      // stale state doesn't carry into the new clip.
+      resetReps();
+    }
+
+    function initMediaPipe() {
+      if (poseInstance) return poseInstance;
+      try {
+        poseInstance = new Pose({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
+        poseInstance.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        poseInstance.onResults(onPoseResults);
+      } catch (err) {
+        poseInstance = null;
+        updateFeedback("Pose engine failed to load. Check your connection and retry.", "error");
+      }
+      return poseInstance;
+    }
+
+    async function startTracking() {
+      if (isTracking) return; // guard against double-start (double click, re-entrant call)
+
+      const pose = initMediaPipe();
+      if (!pose) return; // initMediaPipe already surfaced the error
+
+      exerciseState = createExerciseState();
+      isTracking = true;
+      workoutSessionActive = true;
+      document.getElementById('canvas-overlay-placeholder').classList.add('hidden');
+      document.getElementById('live-feedback-banner').classList.remove('hidden');
+
+      if (currentInputMode === 'webcam') {
+        try {
+          cameraInstance = new Camera(videoWebcam, {
+            onFrame: async () => { if (isTracking && currentInputMode === 'webcam') await poseInstance.send({ image: videoWebcam }); },
+            width: 640, height: 480
+          });
+          await cameraInstance.start();
+          speakCoachAudio("Tracking active. Let's crush this set!", true, 'transition');
+        } catch (err) {
+          let message = "Could not access camera. Please switch to Upload Video Backup mode.";
+          if (err && err.name === 'NotAllowedError') {
+            message = "Camera permission was denied. Allow camera access in your browser settings, or use Upload Video Backup.";
+          } else if (err && err.name === 'NotFoundError') {
+            message = "No camera device was found. Connect a camera or use Upload Video Backup.";
+          } else if (err && err.name === 'NotReadableError') {
+            message = "Your camera is already in use by another application. Close it and try again, or use Upload Video Backup.";
+          } else if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            message = "This browser/context doesn't support camera access (HTTPS required). Please use Upload Video Backup.";
+          }
+          stopTracking();
+          updateFeedback(message, "error");
+          alert(message);
+        }
+      } else {
+        if (!videoUploaded.src) { alert("Please choose a video file first!"); stopTracking(); return; }
+        try {
+          // Make sure the video actually has decodable frames before we start
+          // pushing it through the pose model.
+          if (videoUploaded.readyState < 1) {
+            await new Promise((resolve, reject) => {
+              const onLoaded = () => { cleanup(); resolve(); };
+              const onError = () => { cleanup(); reject(new Error('video load failed')); };
+              const cleanup = () => {
+                videoUploaded.removeEventListener('loadedmetadata', onLoaded);
+                videoUploaded.removeEventListener('error', onError);
+              };
+              videoUploaded.addEventListener('loadedmetadata', onLoaded);
+              videoUploaded.addEventListener('error', onError);
+            });
+          }
+          await videoUploaded.play();
+        } catch (err) {
+          stopTracking();
+          updateFeedback("Couldn't play the uploaded video. Try a different file.", "error");
+          alert("Couldn't play the uploaded video. Please choose a different file.");
+          return;
+        }
+        speakCoachAudio("Analyzing video feed with live audio coach.", true, 'transition');
+        async function loop() {
+          if (!isTracking || currentInputMode !== 'upload') return;
+          if (!videoUploaded.paused && !videoUploaded.ended) await poseInstance.send({ image: videoUploaded });
+          animFrameId = requestAnimationFrame(loop);
+        }
+        loop();
+      }
+    }
+
+    function saveWorkoutSession() {
+      if (!workoutSessionActive || repCount < 1) return;
+      const rpeValue = document.getElementById('perf-rpe').value;
+      const history = JSON.parse(localStorage.getItem('repai_workout_history') || '[]');
+      const timestamp = new Date().toISOString();
+      history.push({
+        exercise: selectedExercise,
+        completed_reps: repCount,
+        total_form_warnings: formWarnings,
+        rep_measurements: sessionRepLog,
+        rpe_scale: rpeValue ? parseInt(rpeValue, 10) : null,
+        timestamp
+      });
+      localStorage.setItem('repai_workout_history', JSON.stringify(history));
+      lastSavedWorkoutTimestamp = timestamp;
+    }
+
+    function stopTracking() {
+      saveWorkoutSession();
+      workoutSessionActive = false;
+      isTracking = false;
+      if (cameraInstance) { cameraInstance.stop(); cameraInstance = null; }
+      if (videoUploaded) videoUploaded.pause();
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+      document.getElementById('canvas-overlay-placeholder').classList.remove('hidden');
+      document.getElementById('live-feedback-banner').classList.add('hidden');
+      document.getElementById('joint-angle-badge').innerText = 'Angle: --°';
+      stopAudioWave();
+    }
+
+    function resetReps() {
+      repCount = 0;
+      repStage = initialStageFor(selectedExercise);
+      formWarnings = 0;
+      sessionRepLog = [];
+      exerciseState = createExerciseState();
+      document.getElementById('rep-counter').innerText = '0';
+      document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+      document.getElementById('score-val').innerText = '100%';
+      document.getElementById('score-bar').style.width = '100%';
+      document.getElementById('joint-angle-badge').innerText = 'Angle: --°';
+      updateFeedback('Ready', 'success');
+    }
+
+    function calculateAngle(A, B, C) {
+      if (!A || !B || !C || A.visibility < 0.4 || B.visibility < 0.4 || C.visibility < 0.4) return null;
+      let rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+      let angle = Math.abs((rad * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360.0 - angle;
+      return Math.round(angle);
+    }
+
+    // Reports "reposition" guidance (debounced so a single dropped frame doesn't
+    // flash the message) and makes sure we never guess a rep transition from
+    // landmarks that aren't reliably visible.
+    function reportMissingLandmarks(state, hint) {
+      state.missingFrames++;
+      if (state.missingFrames >= MISSING_LANDMARK_CONFIRM_FRAMES) {
+        document.getElementById('joint-angle-badge').innerText = 'Angle: --°';
+        updateFeedback(hint, "info");
+        speakCoachAudio(hint, false, 'reposition');
+      }
+    }
+
+    function clearMissingLandmarks(state) {
+      state.missingFrames = 0;
+    }
+
+    // Records one completed rep's real measurements for the Performance
+    // Analyzer: the angle at the rep's turnaround point, the angle back at
+    // the position where the rep was counted, and how long it took since the
+    // previous rep (null for the first rep, since there's nothing to time
+    // against). This is the only place session performance data is captured.
+    function logRepMeasurement(state, returnAngle, now) {
+      const prevRepTime = state.lastRepTime;
+      sessionRepLog.push({
+        rep_number: repCount,
+        extreme_angle: state.extremeAngle,
+        return_angle: returnAngle,
+        duration_ms: prevRepTime ? (now - prevRepTime) : null
+      });
+      state.extremeAngle = null;
+    }
+
+    function onPoseResults(results) {
+      if (!isTracking) return;
+      const vid = currentInputMode === 'webcam' ? videoWebcam : videoUploaded;
+      const newWidth = vid.videoWidth || 640;
+      const newHeight = vid.videoHeight || 480;
+      // Only touch canvas.width/height when they actually change — assigning
+      // them (even to the same value) resets the 2D context every time.
+      if (canvas.width !== newWidth) canvas.width = newWidth;
+      if (canvas.height !== newHeight) canvas.height = newHeight;
+      ctx.save();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+      if (!results.poseLandmarks) {
+        reportMissingLandmarks(exerciseState, "Searching for athlete... step into frame.");
+        ctx.restore(); return;
+      }
+      clearMissingLandmarks(exerciseState);
+      const lm = results.poseLandmarks;
+      drawSkeleton(lm);
+
+      const now = Date.now();
+
+      // SQUATS & LUNGES
+      if (selectedExercise === 'squat' || selectedExercise === 'lunges') {
+        const side = selectActiveSide(lm, LEG_IDS, exerciseState);
+        if (!side) {
+          reportMissingLandmarks(exerciseState, "Can't see your hip, knee, and ankle clearly — step back into frame.");
+          ctx.restore(); return;
+        }
+        const ids = LEG_IDS[side];
+        const torsoIds = TORSO_IDS[side];
+        const knee = calculateAngle(lm[ids[0]], lm[ids[1]], lm[ids[2]]);
+        const torso = calculateAngle(lm[torsoIds[0]], lm[torsoIds[1]], lm[torsoIds[2]]);
+
+        if (knee == null) {
+          reportMissingLandmarks(exerciseState, "Can't see your hip, knee, and ankle clearly — step back into frame.");
+          ctx.restore(); return;
+        }
+        document.getElementById('joint-angle-badge').innerText = `Knee: ${knee}°`;
+
+        const leaningForward = torso != null && torso < 50;
+        if (debounceCondition(exerciseState, 'formBad', leaningForward)) {
+          if (!exerciseState.formWarned) {
+            exerciseState.formWarned = true;
+            formWarnings++;
+            updateFeedback("Chest up! Don't lean forward", "error");
+            speakCoachAudio("Chest up! Keep your back straight.", false, 'form');
+          }
+        } else if (!leaningForward) {
+          exerciseState.formWarned = false;
+        }
+
+        if (!leaningForward) {
+          if (repStage === 'UP' && debounceCondition(exerciseState, 'down', knee < 95)) {
+            repStage = 'DOWN';
+            exerciseState.extremeAngle = knee;
+            exerciseState.counters = {};
+            document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+            updateFeedback("Good depth! Drive up", "success");
+            speakCoachAudio("Good depth!", false, 'transition');
+          } else if (repStage === 'DOWN' && debounceCondition(exerciseState, 'up', knee > 155) && (now - exerciseState.lastRepTime) >= MIN_REP_INTERVAL_MS) {
+            repCount++;
+            logRepMeasurement(exerciseState, knee, now);
+            repStage = 'UP';
+            exerciseState.counters = {};
+            exerciseState.lastRepTime = now;
+            document.getElementById('rep-counter').innerText = repCount;
+            document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+            updateFeedback(`Rep ${repCount} complete! Clean form!`, "success");
+            speakCoachAudio(`Rep ${repCount}! Good squeeze.`, true, 'repComplete');
+            recalculateScore();
+          }
+        }
+      }
+      // PUSH-UPS
+      else if (selectedExercise === 'pushup') {
+        const side = selectActiveSide(lm, ARM_IDS, exerciseState);
+        if (!side) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        const ids = ARM_IDS[side];
+        const elbow = calculateAngle(lm[ids[0]], lm[ids[1]], lm[ids[2]]);
+        if (elbow == null) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        document.getElementById('joint-angle-badge').innerText = `Elbow: ${elbow}°`;
+
+        if (repStage === 'UP' && debounceCondition(exerciseState, 'down', elbow < 85)) {
+          repStage = 'DOWN';
+          exerciseState.extremeAngle = elbow;
+          exerciseState.counters = {};
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback("Good depth, now press!", "success");
+          speakCoachAudio("Good depth, now press!", false, 'transition');
+        } else if (repStage === 'DOWN' && debounceCondition(exerciseState, 'up', elbow > 155) && (now - exerciseState.lastRepTime) >= MIN_REP_INTERVAL_MS) {
+          repCount++;
+          logRepMeasurement(exerciseState, elbow, now);
+          repStage = 'UP';
+          exerciseState.counters = {};
+          exerciseState.lastRepTime = now;
+          document.getElementById('rep-counter').innerText = repCount;
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback(`Pushup ${repCount} locked!`, "success");
+          speakCoachAudio(`Rep ${repCount}!`, true, 'repComplete');
+          recalculateScore();
+        }
+      }
+      // BICEP CURLS
+      else if (selectedExercise === 'bicep_curl') {
+        const side = selectActiveSide(lm, ARM_IDS, exerciseState);
+        if (!side) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        const ids = ARM_IDS[side];
+        const elbow = calculateAngle(lm[ids[0]], lm[ids[1]], lm[ids[2]]);
+        if (elbow == null) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        document.getElementById('joint-angle-badge').innerText = `Flexion: ${elbow}°`;
+
+        // Setup: arm extended (DOWN) -> movement start/phase: curling up past 45° (UP/peak)
+        // -> completion: extending back past 145° counts the rep -> back to DOWN.
+        if (repStage === 'DOWN' && debounceCondition(exerciseState, 'peak', elbow < 45)) {
+          repStage = 'UP';
+          exerciseState.extremeAngle = elbow;
+          exerciseState.counters = {};
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback("Squeeze at the top!", "success");
+          speakCoachAudio("Squeeze at the top!", false, 'transition');
+        } else if (repStage === 'UP' && debounceCondition(exerciseState, 'extend', elbow > 145) && (now - exerciseState.lastRepTime) >= MIN_REP_INTERVAL_MS) {
+          repCount++;
+          logRepMeasurement(exerciseState, elbow, now);
+          repStage = 'DOWN';
+          exerciseState.counters = {};
+          exerciseState.lastRepTime = now;
+          document.getElementById('rep-counter').innerText = repCount;
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback(`Curl ${repCount} complete!`, "success");
+          speakCoachAudio(`Rep ${repCount} complete!`, true, 'repComplete');
+          recalculateScore();
+        }
+      }
+      // SHOULDER PRESS
+      else if (selectedExercise === 'shoulder_press') {
+        const side = selectActiveSide(lm, ARM_IDS, exerciseState);
+        if (!side) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        const ids = ARM_IDS[side];
+        const elbow = calculateAngle(lm[ids[0]], lm[ids[1]], lm[ids[2]]);
+        if (elbow == null) {
+          reportMissingLandmarks(exerciseState, "Can't see your shoulder, elbow, and wrist clearly — reposition the camera.");
+          ctx.restore(); return;
+        }
+        document.getElementById('joint-angle-badge').innerText = `Elbow: ${elbow}°`;
+
+        // Setup: elbows bent at shoulder height (DOWN) -> movement phase: pressing
+        // overhead past 155° extension (UP) -> completion: lowering back below
+        // 110° counts the rep -> back to DOWN. (Distinct thresholds from the curl,
+        // since a press's resting elbow angle is far more open than a curl's.)
+        if (repStage === 'DOWN' && debounceCondition(exerciseState, 'topExtend', elbow > 155)) {
+          repStage = 'UP';
+          exerciseState.extremeAngle = elbow;
+          exerciseState.counters = {};
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback("Locked out! Lower with control", "success");
+          speakCoachAudio("Locked out! Lower with control.", false, 'transition');
+        } else if (repStage === 'UP' && debounceCondition(exerciseState, 'bottomFlex', elbow < 110) && (now - exerciseState.lastRepTime) >= MIN_REP_INTERVAL_MS) {
+          repCount++;
+          logRepMeasurement(exerciseState, elbow, now);
+          repStage = 'DOWN';
+          exerciseState.counters = {};
+          exerciseState.lastRepTime = now;
+          document.getElementById('rep-counter').innerText = repCount;
+          document.getElementById('rep-stage').innerText = stageLabel(selectedExercise, repStage);
+          updateFeedback(`Press ${repCount} complete!`, "success");
+          speakCoachAudio(`Rep ${repCount} complete!`, true, 'repComplete');
+          recalculateScore();
+        }
+      }
+      ctx.restore();
+    }
+
+    function recalculateScore() {
+      let score = Math.max(100 - (formWarnings * 5) + (repCount * 2), 50);
+      score = Math.min(score, 99);
+      document.getElementById('score-val').innerText = `${score}%`;
+      document.getElementById('score-bar').style.width = `${score}%`;
+    }
+
+    function updateFeedback(msg, type) {
+      const banner = document.getElementById('feedback-text');
+      document.getElementById('coaching-advice').innerText = `"${msg}"`;
+      if (type === 'error') {
+        banner.className = "text-red-400 font-semibold flex items-center gap-2";
+        banner.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> ${msg}`;
+      } else if (type === 'success') {
+        banner.className = "text-emerald-400 font-semibold flex items-center gap-2";
+        banner.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ${msg}`;
+      } else {
+        banner.className = "text-cyan-400 font-semibold flex items-center gap-2";
+        banner.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${msg}`;
+      }
+      safeCreateIcons();
+    }
+
+    function drawSkeleton(lm) {
+      const pairs = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
+      ctx.lineWidth = 4; ctx.strokeStyle = '#10b981';
+      pairs.forEach(([i, j]) => {
+        if (lm[i] && lm[j] && lm[i].visibility > 0.4 && lm[j].visibility > 0.4) {
+          ctx.beginPath(); ctx.moveTo(lm[i].x * canvas.width, lm[i].y * canvas.height);
+          ctx.lineTo(lm[j].x * canvas.width, lm[j].y * canvas.height); ctx.stroke();
+        }
+      });
+      [11,12,13,14,15,16,23,24,25,26,27,28].forEach(i => {
+        if (lm[i] && lm[i].visibility > 0.4) {
+          ctx.beginPath(); ctx.arc(lm[i].x * canvas.width, lm[i].y * canvas.height, 5, 0, 2*Math.PI);
+          ctx.fillStyle = '#06b6d4'; ctx.fill();
+        }
+      });
+    }
+
+    // Module 2 API: Diet Plan
+    async function requestDietPlan() {
+      const age = parseInt(document.getElementById('diet-age').value, 10);
+      const sex = document.getElementById('diet-sex').value;
+      const weight = parseFloat(document.getElementById('diet-weight').value);
+      const height = parseFloat(document.getElementById('diet-height').value);
+      const goal = document.getElementById('diet-goal').value;
+      const activity = document.getElementById('diet-activity').value;
+      const pref = document.getElementById('diet-pref').value;
+      const resBox = document.getElementById('diet-result');
+      resBox.classList.remove('hidden');
+
+      // Validate the user's actual input before sending it anywhere.
+      const errors = [];
+      if (!Number.isFinite(age) || age < 13 || age > 100) errors.push('Age must be between 13 and 100.');
+      if (!Number.isFinite(height) || height < 100 || height > 250) errors.push('Height must be between 100cm and 250cm.');
+      if (!Number.isFinite(weight) || weight < 30 || weight > 300) errors.push('Weight must be between 30kg and 300kg.');
+      if (errors.length) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">${errors.map(escapeHtml).join('<br>')}</div>`;
+        return;
+      }
+
+      resBox.innerHTML = "Computing personalized metabolic split...";
+
+      let data = null;
+      let fetchError = null;
+      try {
+        const res = await fetch(`${BACKEND_BASE}/api/diet/plan`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ age: age, sex: sex, height_cm: height, weight_kg: weight, goal: goal, activity_level: activity, dietary_pref: pref })
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          fetchError = (errBody && errBody.detail) ? JSON.stringify(errBody.detail) : `Request failed (${res.status}).`;
+        } else {
+          data = await res.json();
+        }
+      } catch (e) {
+        fetchError = 'Could not reach the backend.';
+      }
+
+      // Never fabricate nutrition numbers client-side when the backend call
+      // fails — show a clear error instead of silently guessing.
+      if (!data) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">Could not calculate your diet plan. ${escapeHtml(fetchError || '')}</div>`;
+        return;
+      }
+
+      currentDietTargetCalories = data.target_calories;
+      document.getElementById('target-protein-input').value = data.macros.protein_g;
+
+      const mealsHtml = (data.meals || []).map(m => `
+        <div class="flex justify-between gap-2 border-t border-slate-800 html:not(.dark):border-slate-300 pt-1 mt-1">
+          <span>${escapeHtml(m.meal_type)}: <span class="text-slate-400">${escapeHtml(m.name)}</span></span>
+          <span class="whitespace-nowrap text-slate-400">${m.calories} kcal &middot; P${m.protein_g}/C${m.carbs_g}/F${m.fats_g}</span>
+        </div>
+      `).join('');
+
+      const groceryHtml = (data.grocery_list || []).map(escapeHtml).join(', ');
+
+      resBox.innerHTML = `
+        <div class="text-brand-500 font-bold">BMI: ${data.bmi} | BMR: ${data.bmr} kcal | TDEE: ${data.tdee} kcal | Target: ${data.target_calories} kcal/day</div>
+        <div>Target Macros: <b class="text-white html:not(.dark):text-slate-900">${data.macros.protein_g}g Protein</b> • <b class="text-white html:not(.dark):text-slate-900">${data.macros.carbs_g}g Carbs</b> • <b class="text-white html:not(.dark):text-slate-900">${data.macros.fats_g}g Fats</b></div>
+        ${mealsHtml}
+        <div class="border-t border-slate-800 html:not(.dark):border-slate-300 pt-1 mt-1"><span class="text-slate-400">Grocery list:</span> ${groceryHtml}</div>
+        <div class="text-[10px] text-slate-500 pt-1">${escapeHtml(data.disclaimer || '')}</div>
+      `;
+    }
+
+    // Module 2 Vision: Meal Photo Preview & Analysis
+    // NOTE: this feature no longer has a "fake data" fallback path anywhere.
+    // If the backend or the vision model fails, the user sees a real error,
+    // never a substituted hardcoded/random result.
+    let mealPhotoAnalyzing = false;
+    let currentDietTargetCalories = null;
+
+    function previewMealPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Requirement: clear any old result/error the moment a new image is chosen.
+      hideMealPhotoResult();
+      hideMealPhotoError();
+      document.getElementById('meal-photo-rescan-btn').classList.add('hidden');
+
+      document.getElementById('meal-photo-filename').innerText = file.name;
+      document.getElementById('meal-photo-preview').src = URL.createObjectURL(file);
+      document.getElementById('meal-photo-preview-wrap').classList.remove('hidden');
+      document.getElementById('meal-photo-dropzone').classList.add('hidden');
+    }
+
+    function clearMealPhoto() {
+      const fileInput = document.getElementById('meal-photo-input');
+      fileInput.value = '';
+      document.getElementById('meal-photo-preview-wrap').classList.add('hidden');
+      document.getElementById('meal-photo-dropzone').classList.remove('hidden');
+      document.getElementById('meal-photo-rescan-btn').classList.add('hidden');
+      hideMealPhotoResult();
+      hideMealPhotoError();
+    }
+
+    function hideMealPhotoResult() {
+      const resBox = document.getElementById('meal-photo-result');
+      resBox.classList.add('hidden');
+      resBox.innerHTML = '';
+    }
+
+    function showMealPhotoError(message) {
+      hideMealPhotoResult();
+      const errBox = document.getElementById('meal-photo-error');
+      document.getElementById('meal-photo-error-text').innerText = message;
+      errBox.classList.remove('hidden');
+      document.getElementById('meal-photo-rescan-btn').classList.remove('hidden');
+    }
+
+    function hideMealPhotoError() {
+      const errBox = document.getElementById('meal-photo-error');
+      errBox.classList.add('hidden');
+      document.getElementById('meal-photo-error-text').innerText = '';
+    }
+
+    function setMealPhotoLoading(isLoading) {
+      mealPhotoAnalyzing = isLoading;
+      const btn = document.getElementById('meal-photo-analyze-btn');
+      const label = document.getElementById('meal-photo-analyze-label');
+      btn.disabled = isLoading;
+      label.innerText = isLoading ? 'Analyzing photo…' : 'Analyze Photo';
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.innerText = String(str);
+      return d.innerHTML;
+    }
+
+    async function analyzeMealPhoto() {
+      if (mealPhotoAnalyzing) return; // guard against duplicate submissions
+
+      const fileInput = document.getElementById('meal-photo-input');
+      const file = fileInput.files[0];
+      if (!file) {
+        showMealPhotoError('Please choose a photo of your meal first.');
+        return;
+      }
+
+      const mealType = document.getElementById('meal-photo-type').value;
+      const parsedProteinTarget = parseInt(document.getElementById('target-protein-input').value, 10);
+      const targetProtein = Number.isFinite(parsedProteinTarget) ? parsedProteinTarget : 160;
+      if (!Number.isFinite(currentDietTargetCalories) || currentDietTargetCalories <= 0) {
+        showMealPhotoError('Calculate your personalized calorie target in the Diet Plan before scanning a meal.');
+        return;
+      }
+
+      hideMealPhotoError();
+      hideMealPhotoResult();
+      setMealPhotoLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append('meal_type', mealType);
+        formData.append('daily_protein_target', targetProtein);
+        formData.append('daily_calorie_target', currentDietTargetCalories);
+        formData.append('file', file); // the actual selected image, sent as-is
+
+        const res = await fetch(`${BACKEND_BASE}/api/diet/analyze-meal-photo`, { method: 'POST', body: formData });
+
+        let payload;
+        try {
+          payload = await res.json();
+        } catch (parseErr) {
+          throw new Error('The server sent back an unreadable response.');
+        }
+
+        if (!res.ok) {
+          // FastAPI error responses use { detail: "..." }
+          throw new Error(payload.detail || `Request failed (HTTP ${res.status}).`);
+        }
+
+        renderMealPhotoResult(payload);
+      } catch (err) {
+        showMealPhotoError(err.message || 'Could not reach the AI Meal Photo Scanner. Please try again.');
+      } finally {
+        setMealPhotoLoading(false);
+      }
+    }
+
+    function renderMealPhotoResult(data) {
+      const resBox = document.getElementById('meal-photo-result');
+      const rescanBtn = document.getElementById('meal-photo-rescan-btn');
+      let html = '';
+
+      if (!data.is_food) {
+        html += `
+          <div class="p-2 bg-amber-950/40 border border-amber-800/40 rounded text-amber-300">
+            <b>No food detected.</b> This doesn't look like a meal photo.
+          </div>`;
+        if (data.uncertainties && data.uncertainties.length) {
+          html += `<div class="text-slate-400 text-[10px] italic">${data.uncertainties.map(escapeHtml).join(' ')}</div>`;
+        }
+        if (data.coach_feedback) {
+          html += `<div class="text-slate-300 mt-1">${escapeHtml(data.coach_feedback)}</div>`;
+        }
+        resBox.innerHTML = html;
+        resBox.classList.remove('hidden');
+        rescanBtn.classList.remove('hidden');
+        return;
+      }
+
+      // Detected items, shown individually with their own confidence.
+      html += `<div class="font-bold text-white html:not(.dark):text-slate-900">Detected in ${escapeHtml(mealTypeLabel(data.meal_type))}:</div>`;
+      if (data.detected_items && data.detected_items.length) {
+        html += data.detected_items.map(item => {
+          const qty = item.estimated_quantity ? ` — ${escapeHtml(item.estimated_quantity)}` : '';
+          const weight = (item.estimated_weight_g !== null && item.estimated_weight_g !== undefined) ? ` (~${Math.round(item.estimated_weight_g)}g)` : '';
+          const conf = Math.round((item.confidence || 0) * 100);
+          return `
+            <div class="p-1.5 bg-slate-900 html:not(.dark):bg-slate-100 rounded border border-slate-800 html:not(.dark):border-slate-300 flex justify-between items-center">
+              <span>${escapeHtml(item.name)}${qty}${weight}</span>
+              <span class="text-cyan-400 font-bold text-[10px]">${conf}% confidence</span>
+            </div>`;
+        }).join('');
+      } else {
+        html += `<div class="text-slate-400 text-[10px] italic">No specific items could be identified.</div>`;
+      }
+
+      // Nutrition — only show numbers the model actually provided, and always label as estimates.
+      const n = data.nutrition || {};
+      const hasAnyNutrition = ['calories', 'protein_g', 'carbs_g', 'fat_g', 'fiber_g'].some(k => n[k] !== null && n[k] !== undefined);
+      if (hasAnyNutrition) {
+        const parts = [];
+        if (n.calories != null) parts.push(`<b class="text-white html:not(.dark):text-slate-900">${n.calories} kcal</b>`);
+        if (n.protein_g != null) parts.push(`<b class="text-emerald-500">${n.protein_g}g Protein</b>`);
+        if (n.carbs_g != null) parts.push(`${n.carbs_g}g Carbs`);
+        if (n.fat_g != null) parts.push(`${n.fat_g}g Fat`);
+        if (n.fiber_g != null) parts.push(`${n.fiber_g}g Fiber`);
+        html += `<div class="mt-1">Estimated: ${parts.join(' · ')}</div>`;
+        html += `<div class="text-slate-500 text-[10px] italic">${escapeHtml(data.analysis_disclaimer || 'These are visual estimates, not exact measurements.')}</div>`;
+      } else {
+        html += `<div class="mt-1 text-slate-400 text-[10px] italic">Nutrition could not be estimated reliably for this photo.</div>`;
+      }
+
+      // Uncertainties, shown prominently rather than hidden.
+      if (data.uncertainties && data.uncertainties.length) {
+        html += `
+          <div class="mt-2 p-2 bg-amber-950/30 border border-amber-800/40 rounded text-amber-300">
+            <b>Uncertain about:</b>
+            <ul class="list-disc list-inside">
+              ${data.uncertainties.map(u => `<li>${escapeHtml(u)}</li>`).join('')}
+            </ul>
+          </div>`;
+      }
+
+      if (data.protein_deficit_remaining_g != null) {
+        html += `<div class="text-amber-500 font-semibold mt-1">Estimated Remaining Daily Protein: ${data.protein_deficit_remaining_g}g</div>`;
+      }
+      if (data.calories_remaining != null) {
+        html += `<div class="text-amber-500 font-semibold">Estimated Remaining Daily Calories: ${data.calories_remaining} kcal</div>`;
+      }
+
+      if (data.coach_feedback) {
+        html += `<div class="text-slate-400 text-[10px] italic mt-1">${escapeHtml(data.coach_feedback)}</div>`;
+      }
+
+      resBox.innerHTML = html;
+      resBox.classList.remove('hidden');
+      rescanBtn.classList.remove('hidden');
+
+      if (data.coach_feedback) speakCoachAudio(data.coach_feedback);
+    }
+
+    function mealTypeLabel(mt) {
+      return mt || 'meal';
+    }
+
+    // Module 3: Habit Tracker API
+    async function requestBehavioralNudge() {
+      const resBox = document.getElementById('habit-result');
+      resBox.classList.remove('hidden');
+
+      const slot = document.getElementById('habit-slot').value;
+      const daysTrained = parseInt(document.getElementById('habit-days-trained').value, 10);
+      const sleepHours = parseFloat(document.getElementById('habit-sleep').value);
+      const stress = parseInt(document.getElementById('habit-stress').value, 10);
+      const soreness = parseInt(document.getElementById('habit-soreness').value, 10);
+
+      // Validate the user's actual input before sending it anywhere.
+      const errors = [];
+      if (!Number.isFinite(daysTrained) || daysTrained < 0 || daysTrained > 7) errors.push('Days trained must be between 0 and 7.');
+      if (!Number.isFinite(sleepHours) || sleepHours < 0 || sleepHours > 24) errors.push('Average sleep must be between 0 and 24 hours.');
+      if (!Number.isFinite(stress) || stress < 1 || stress > 10) errors.push('Stress must be between 1 and 10.');
+      if (!Number.isFinite(soreness) || soreness < 1 || soreness > 10) errors.push('Soreness must be between 1 and 10.');
+      if (errors.length) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">${errors.map(escapeHtml).join('<br>')}</div>`;
+        return;
+      }
+
+      resBox.innerHTML = "Calculating skip risk from your inputs...";
+
+      // Days-trained count -> a 7-slot 0/1 attendance array (order doesn't
+      // affect the score, only the total, which is what the backend uses).
+      const attendanceArray = Array.from({ length: 7 }, (_, i) => (i < daysTrained ? 1 : 0));
+
+      let data = null;
+      let fetchError = null;
+      try {
+        const res = await fetch(`${BACKEND_BASE}/api/habits/predict-skip`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            user_id: "usr_1",
+            past_week_attendance: attendanceArray,
+            sleep_hours_avg: sleepHours,
+            reported_stress: stress,
+            soreness_level: soreness,
+            preferred_slot: slot
+          })
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          fetchError = (errBody && errBody.detail) ? JSON.stringify(errBody.detail) : `Request failed (${res.status}).`;
+        } else {
+          data = await res.json();
+        }
+      } catch (e) {
+        fetchError = 'Could not reach the backend.';
+      }
+
+      // Never fabricate a risk score client-side when the backend call
+      // fails — show a clear error instead of silently guessing.
+      if (!data) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">Could not calculate skip risk. ${escapeHtml(fetchError || '')}</div>`;
+        return;
+      }
+
+      const factorsHtml = (data.factor_breakdown || []).map(f => `
+        <div class="flex justify-between gap-2">
+          <span>${escapeHtml(f.factor)} <span class="text-slate-500">(${escapeHtml(f.user_value)})</span></span>
+          <span class="text-slate-400 whitespace-nowrap">+${f.points_contributed} / ${f.max_points} pts</span>
+        </div>
+      `).join('');
+
+      resBox.innerHTML = `
+        <div class="text-amber-500 font-bold">${data.skip_probability_pct}% Skip Risk &middot; ${escapeHtml(data.risk_level)}</div>
+        <div>${escapeHtml(data.suggested_nudge)}</div>
+        <div class="border-t border-slate-800 html:not(.dark):border-slate-300 pt-1 mt-1 space-y-0.5">${factorsHtml}</div>
+        <div class="text-slate-400 pt-1">${escapeHtml(data.adjusted_schedule)}</div>
+        <div class="text-[10px] text-slate-500 pt-1">${escapeHtml(data.method_disclaimer || '')}</div>
+      `;
+    }
+
+    // Module 4: Buddy Chat — real AI replies (via backend, which holds the
+    // API key) with session conversation history, honest loading/error
+    // states, and no fabricated fallback replies.
+    let buddyHistory = []; // session-only; cleared on page reload, never persisted
+    let buddySending = false;
+    const MAX_BUDDY_HISTORY_TURNS = 40;
+
+    async function sendBuddyMessage() {
+      if (buddySending) return;
+      const input = document.getElementById('buddy-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      const persona = document.getElementById('buddy-persona').value;
+      const box = document.getElementById('chat-box');
+      const sendBtn = document.getElementById('buddy-send-btn');
+
+      box.innerHTML += `<div class="text-purple-400"><b>You:</b> ${escapeHtml(text)}</div>`;
+      box.scrollTop = box.scrollHeight;
+
+      const loadingId = `buddy-loading-${Date.now()}`;
+      box.innerHTML += `<div id="${loadingId}" class="text-slate-500 italic">RepAI is typing...</div>`;
+      box.scrollTop = box.scrollHeight;
+
+      buddySending = true;
+      input.disabled = true;
+      if (sendBtn) sendBtn.disabled = true;
+
+      let data = null;
+      let fetchError = null;
+      try {
+        const res = await fetch(`${BACKEND_BASE}/api/chat/buddy`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ message: text, persona: persona, history: buddyHistory })
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          fetchError = (errBody && errBody.detail) ? String(errBody.detail) : `Request failed (${res.status}).`;
+        } else {
+          data = await res.json();
+        }
+      } catch (e) {
+        fetchError = 'Could not reach the backend.';
+      }
+
+      document.getElementById(loadingId)?.remove();
+      buddySending = false;
+      input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      input.focus();
+
+      // Never fabricate a coach reply client-side when the backend/AI call
+      // fails — show a clear error instead.
+      if (!data) {
+        box.innerHTML += `<div class="text-red-400 font-semibold">Couldn't get a reply. ${escapeHtml(fetchError || '')}</div>`;
+        box.scrollTop = box.scrollHeight;
+        return;
+      }
+
+      const reply = data.reply || '';
+      box.innerHTML += `<div class="text-slate-200 html:not(.dark):text-slate-800"><b class="text-brand-500">RepAI:</b> ${escapeHtml(reply)}</div>`;
+      box.scrollTop = box.scrollHeight;
+      speakCoachAudio(reply);
+
+      buddyHistory.push({ role: 'user', content: text });
+      buddyHistory.push({ role: 'assistant', content: reply });
+      if (buddyHistory.length > MAX_BUDDY_HISTORY_TURNS) {
+        buddyHistory = buddyHistory.slice(-MAX_BUDDY_HISTORY_TURNS);
+      }
+    }
+
+    function renderSessionComparison(currentSession) {
+      let history;
+      try {
+        history = JSON.parse(localStorage.getItem('repai_workout_history') || '[]');
+      } catch (error) {
+        history = [];
+      }
+
+      const previousSession = history
+        .filter(session => session && session.exercise === currentSession.exercise && session.completed_reps >= 1 && session.timestamp !== lastSavedWorkoutTimestamp)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+      if (!previousSession) return '<div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Baseline not established yet.</div>';
+
+      const change = (current, previous) => `${current - previous >= 0 ? '+' : ''}${current - previous}`;
+      const currentMeasurements = currentSession.rep_measurements?.length ?? 0;
+      const previousMeasurements = previousSession.rep_measurements?.length ?? 0;
+      const currentRpe = currentSession.rpe_scale ?? 'Not reported';
+      const previousRpe = previousSession.rpe_scale ?? 'Not reported';
+      const rpeChange = Number.isFinite(currentSession.rpe_scale) && Number.isFinite(previousSession.rpe_scale)
+        ? change(currentSession.rpe_scale, previousSession.rpe_scale)
+        : 'Not enough data';
+
+      return `
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Current Session</div>
+        <div class="text-slate-400 space-y-0.5 mb-2">${currentSession.completed_reps} reps · ${currentSession.total_form_warnings} form warnings · RPE ${currentRpe} · ${currentMeasurements} measurements</div>
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Previous Session</div>
+        <div class="text-slate-400 space-y-0.5 mb-2">${previousSession.completed_reps} reps · ${previousSession.total_form_warnings} form warnings · RPE ${previousRpe} · ${previousMeasurements} measurements</div>
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">What Changed</div>
+        <div class="text-slate-400 space-y-0.5">Reps: ${change(currentSession.completed_reps, previousSession.completed_reps)} · Form warnings: ${change(currentSession.total_form_warnings, previousSession.total_form_warnings)} · RPE: ${rpeChange} · Measurements: ${change(currentMeasurements, previousMeasurements)}</div>`;
+    }
+
+    // Module 5: Performance Analyzer — reports only on real AI Trainer session data
+    // (repCount / formWarnings / sessionRepLog), flowing: AI Trainer -> session
+    // metrics -> Performance Analyzer backend -> this UI.
+    async function fetchPerformanceReport() {
+      const resBox = document.getElementById('perf-result');
+      const rpeRaw = document.getElementById('perf-rpe').value;
+      const rpe = rpeRaw ? parseInt(rpeRaw) : null;
+      resBox.classList.remove('hidden');
+
+      if (!repCount || repCount <= 0) {
+        resBox.innerHTML = `<div class="text-amber-400 font-semibold">No session data yet.</div>
+          <div class="text-[11px] text-slate-400 mt-1">Open the AI Trainer, complete at least one rep of an exercise, then come back here to generate a report.</div>`;
+        return;
+      }
+
+      resBox.innerHTML = "Analyzing this session's measured data...";
+
+      let data = null;
+      try {
+        const res = await fetch(`${BACKEND_BASE}/api/performance/report`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            exercise: selectedExercise,
+            completed_reps: repCount,
+            total_form_warnings: formWarnings,
+            rep_measurements: sessionRepLog,
+            rpe_scale: rpe
+          })
+        });
+        if (res.ok) data = await res.json();
+      } catch(e) {}
+
+      if (!data) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">Couldn't reach the Performance Analyzer backend.</div>
+          <div class="text-[11px] text-slate-400 mt-1">Your session (${repCount} rep(s), ${formWarnings} form warning(s)) is still there — try again once the backend is reachable.</div>`;
+        return;
+      }
+
+      const md = data.measured_data || {};
+      const dm = data.derived_metrics || {};
+      const scoreHtml = data.score_available
+        ? `<span class="text-blue-400 font-bold text-base">${data.performance_score}/100</span>`
+        : `<span class="text-amber-400 font-semibold">Not enough data for a score</span>`;
+      const comparisonHtml = renderSessionComparison({
+        exercise: selectedExercise,
+        completed_reps: repCount,
+        total_form_warnings: formWarnings,
+        rep_measurements: sessionRepLog,
+        rpe_scale: rpe
+      });
+
+      resBox.innerHTML = `
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Measured Data</div>
+        <div class="text-slate-400 space-y-0.5 mb-2">
+          <div>Exercise: ${md.exercise ?? '—'}</div>
+          <div>Completed reps: ${md.completed_reps ?? '—'}</div>
+          <div>Form warnings: ${md.total_form_warnings ?? '—'}</div>
+          <div>Reps with angle data: ${md.reps_with_angle_data ?? '—'}</div>
+          <div>Reps with tempo data: ${md.reps_with_tempo_data ?? '—'}</div>
+          <div>Self-reported RPE: ${md.self_reported_rpe ?? 'Not enough data'}</div>
+        </div>
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Derived Metrics</div>
+        <div class="text-slate-400 space-y-0.5 mb-2">
+          <div>Range-of-motion consistency: ${dm.range_of_motion_consistency ?? 'Not enough data'}</div>
+          <div>Joint-angle consistency: ${dm.joint_angle_consistency ?? 'Not enough data'}</div>
+          <div>Rep consistency (tempo): ${dm.rep_consistency_tempo ?? 'Not enough data'}</div>
+          <div>Movement tempo: ${dm.movement_tempo ?? 'Not enough data'}</div>
+          <div>Left/right symmetry: ${dm.left_right_symmetry ?? 'Not enough data'}</div>
+          <div>Movement degradation: ${dm.movement_degradation ?? 'Not enough data'}</div>
+        </div>
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Overall Score</div>
+        <div class="mb-2">${scoreHtml}</div>
+        ${comparisonHtml}
+        <div class="font-bold text-slate-200 html:not(.dark):text-slate-800">Explanation</div>
+        <ul class="text-slate-400 list-disc list-inside space-y-0.5">
+          ${(data.explanation || []).map(e => `<li>${e}</li>`).join('')}
+        </ul>`;
+    }
+
+    // Module 6: Gym Recommender
+    // Real results come from the backend's configured location provider
+    // (Google Places). If no provider is configured, or the request fails,
+    // this NEVER silently swaps in fabricated businesses — it either shows
+    // clearly-labeled DEMO data returned by the backend, or a real error.
+    async function requestGymRecommendations() {
+      const resBox = document.getElementById('gym-result');
+      const cityRaw = document.getElementById('gym-city').value;
+      const city = (cityRaw || '').trim();
+      const amenity = document.getElementById('gym-amenity').value;
+      const budgetRaw = document.getElementById('gym-budget').value;
+
+      resBox.classList.remove('hidden');
+
+      // Validate input client-side before sending anything.
+      const errors = [];
+      if (city.length < 2 || !/[A-Za-z0-9]/.test(city)) {
+        errors.push('Enter a valid city, neighborhood, or postal code.');
+      }
+      let budget = null;
+      if (budgetRaw !== '') {
+        budget = Number(budgetRaw);
+        if (!Number.isFinite(budget) || budget < 0) {
+          errors.push('Budget must be a positive number.');
+        }
+      }
+      if (errors.length) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">${errors.map(escapeHtml).join('<br>')}</div>`;
+        return;
+      }
+
+      resBox.innerHTML = `Locating facilities in ${escapeHtml(city)}...`;
+
+      let data = null;
+      let fetchError = null;
+      try {
+        const res = await fetch(`${BACKEND_BASE}/api/gyms/recommend`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            city: city,
+            goal: "general fitness",
+            max_budget_monthly: budget,
+            amenity_focus: amenity
+          })
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          fetchError = (errBody && errBody.detail) ? String(errBody.detail) : `Request failed (${res.status}).`;
+        } else {
+          data = await res.json();
+        }
+      } catch (e) {
+        fetchError = 'Could not reach the backend.';
+      }
+
+      // Never fabricate gym listings client-side when the backend/provider
+      // call fails — show a clear error instead of silently guessing.
+      if (!data) {
+        resBox.innerHTML = `<div class="text-red-400 font-semibold">Could not fetch gyms. ${escapeHtml(fetchError || '')}</div>`;
+        return;
+      }
+
+      const isDemo = !!data.is_demo;
+      const badge = isDemo
+        ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">DEMO DATA</span>`
+        : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">REAL DATA</span>`;
+      const sourceLine = `<div class="flex items-center justify-between text-[10px] text-slate-500"><span>${escapeHtml(data.source || '')}</span>${badge}</div>`;
+      const demoNotice = isDemo
+        ? `<div class="p-2 bg-amber-950/30 border border-amber-800/40 rounded text-amber-300 text-[10px]">These are sample listings, not real businesses. Configure a location provider on the backend to see real gyms.</div>`
+        : '';
+      const messageLine = data.message
+        ? `<div class="text-[10px] text-slate-400">${escapeHtml(data.message)}</div>`
+        : '';
+
+      const results = data.results || [];
+      let listHtml;
+      if (results.length === 0) {
+        listHtml = `<div class="text-slate-400">No gyms found for that search. Try a different city, amenity, or a higher budget.</div>`;
+      } else {
+        listHtml = results.map(g => {
+          const ratingHtml = (g.rating !== null && g.rating !== undefined)
+            ? `<span class="text-pink-500 font-bold">★${escapeHtml(String(g.rating))}</span>` : '';
+          const priceHtml = (g.monthly_price_inr !== null && g.monthly_price_inr !== undefined)
+            ? `<span class="text-slate-400">₹${escapeHtml(String(g.monthly_price_inr))}/mo</span>` : '';
+          const addressHtml = g.address
+            ? `<div class="text-slate-500 text-[10px]">${escapeHtml(g.address)}</div>` : '';
+          const highlightHtml = g.highlight
+            ? `<div class="text-slate-400 text-[10px]">${escapeHtml(g.highlight)}</div>` : '';
+          const priceNoteHtml = g.price_note
+            ? `<div class="text-slate-500 text-[10px] italic">${escapeHtml(g.price_note)}</div>` : '';
+          const linkHtml = g.maps_url
+            ? `<a href="${escapeHtml(g.maps_url)}" target="_blank" rel="noopener" class="text-brand-400 text-[10px] underline">View on Google Maps</a>` : '';
+          return `<div class="p-2 bg-slate-900 html:not(.dark):bg-slate-100 rounded space-y-1">
+            <div class="flex justify-between items-center">
+              <span class="font-semibold">${escapeHtml(g.name)}</span>
+              <span class="flex items-center gap-2">${ratingHtml}${priceHtml}</span>
+            </div>
+            ${addressHtml}
+            ${highlightHtml}
+            ${priceNoteHtml}
+            ${linkHtml}
+          </div>`;
+        }).join('');
+      }
+
+      resBox.innerHTML = `${sourceLine}${demoNotice}${messageLine}<div class="space-y-2 mt-1">${listHtml}</div>`;
+    }
+
+    // Initialize the AI Trainer panel to its real starting state (0 reps,
+    // 100% score) instead of leaving the hardcoded placeholder markup
+    // ("95%" form score) on screen before any session data exists.
+    resetReps();
+  </script>
+</body>
+</html>
